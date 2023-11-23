@@ -12,14 +12,12 @@ import java.io.Serializable;
 public class Device {
     @PrimaryKey(autoGenerate = true)
     private int id;
-    private String name;
     private String type;
-    private String mac;
+    private String deviceId;
 
-    public Device(String name, String type, String mac){
-        this.name = name;
+    public Device(String type, String deviceId){
         this.type = type;
-        this.mac = mac;
+        this.deviceId = deviceId;
     }
 
     public int getId() {
@@ -30,13 +28,6 @@ public class Device {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getType() {
         return type;
@@ -46,11 +37,11 @@ public class Device {
         this.type = type;
     }
 
-    public String getMac() {
-        return mac;
+    public String getDeviceId() {
+        return deviceId;
     }
 
-    public void setMac(String mac) {
-        this.mac = mac;
+    public void setDeviceId(String mac) {
+        this.deviceId = mac;
     }
 }

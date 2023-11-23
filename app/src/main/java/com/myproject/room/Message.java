@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey;
 import androidx.room.TypeConverter;
 import androidx.room.TypeConverters;
 
-import com.myproject.retrofit.MessageApi;
+
 
 import java.sql.Time;
 import java.util.Date;

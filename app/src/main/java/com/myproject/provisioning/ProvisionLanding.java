@@ -72,6 +72,8 @@ public class ProvisionLanding extends AppCompatActivity {
         initViews();
         EventBus.getDefault().register(this);
         bundle = getIntent().getExtras();
+
+        Log.i(TAG, "Device name " + deviceName);
     }
 
     @Override
@@ -275,6 +277,7 @@ public class ProvisionLanding extends AppCompatActivity {
 
             tvConnectDeviceInstruction.setText(instruction);
             tvDeviceName.setVisibility(View.GONE);
+            Log.i(TAG, "PROVLANDING-- deviceName = " +deviceName);
 
         } else {
 
@@ -282,6 +285,7 @@ public class ProvisionLanding extends AppCompatActivity {
             tvConnectDeviceInstruction.setText(instruction);
             tvDeviceName.setVisibility(View.VISIBLE);
             tvDeviceName.setText(deviceName);
+
         }
 
         txtConnectBtn.setText(R.string.btn_connect);

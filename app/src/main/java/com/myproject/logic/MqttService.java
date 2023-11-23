@@ -1,39 +1,21 @@
 package com.myproject.logic;
 
-import static com.myproject.ui.activities.StartScreen.HIVE_BROKER;
-import static com.myproject.ui.activities.StartScreen.PUB_ARM_DISARM_REQUEST;
-import static com.myproject.ui.activities.StartScreen.PUB_CONTROL_TOPIC;
-import static com.myproject.ui.activities.StartScreen.RELAY_CONTROL_TOPIC;
-import static com.myproject.ui.activities.StartScreen.RELAY_STATUS_SUB;
-import static com.myproject.ui.activities.StartScreen.RELAY_VALUE;
-import static com.myproject.ui.activities.StartScreen.RESET_REQUEST;
-import static com.myproject.ui.activities.StartScreen.TEMP_PUB;
-import static com.myproject.ui.activities.StartScreen.TEMP_SUB;
+
+import static com.myproject.ui.activities.HomeActivity.RELAY_STATUS;
+import static com.myproject.ui.activities.HomeActivity.TEMP_VALUE;
+import static com.myproject.ui.activities.HomeActivity.TEMP_SET_STATUS;
 
 import android.content.Context;
-import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
-import android.widget.Toast;
 
 //import org.eclipse.paho.android.service.MqttAndroidClient;
-import androidx.lifecycle.ViewModelProvider;
 
-import com.myproject.model.MqttMsg;
-import com.myproject.retrofit.MessageApi;
-import com.myproject.retrofit.RetrofitService;
 import com.myproject.room.Device;
-import com.myproject.room.DeviceViewModel;
-import com.myproject.room.MessageViewModel;
-import com.myproject.ui.activities.MainTest;
-import com.myproject.ui.activities.StartScreen;
 
 import info.mqtt.android.service.Ack;
 import info.mqtt.android.service.MqttAndroidClient;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -46,43 +28,36 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class MqttService implements Parcelable{
 
     public static final String TAG = "MqttService";
+    //public static final String  HIVE_BROKER = "ssl://e7ea538cb0564a42b068269a96574848.s1.eu.hivemq.cloud:8883";
 
+    public static final String EDMX_BROKER = "ssl://l1716957.ala.us-east-1.emqxsl.com";
     public MqttAndroidClient client;
     private Context context;
-    private String tempSubTopic;
-    private String tempPubTopic;
-    private String relayControlTopic;
-    private String relayStatusSubTopic;
-    private RetrofitService retrofitService = new RetrofitService();
-    private MessageApi messageApi = retrofitService.getRetrofit().create(MessageApi.class);
+
+    private List<String> keys = new ArrayList<>();
+
 
     public interface CallBackListener{
-        void messageReceived(String topic, String key, String message);
+        void messageReceived(String topic, MqttMessage message) throws JSONException;
+        void onConnect() throws MqttException, JSONException;
+
     }
 
     public CallBackListener listener;
 
     public MqttService(Context context) throws MqttException {
         this.context = context.getApplicationContext();
-        this.client = new MqttAndroidClient(context, HIVE_BROKER, UUID.randomUUID().toString(), Ack.AUTO_ACK);
-        new Thread(() -> {
-            try {
-                connectMqtt();
-                Log.i(TAG, "connected via new Thread in MqttService.java");
-            } catch (MqttException e) {
-                throw new RuntimeException(e);
-            }
-        }).start();
-       // this.client.setCallback(listener);
+        this.client = new MqttAndroidClient(context, EDMX_BROKER, UUID.randomUUID().toString(), Ack.AUTO_ACK);
+        connectMqtt();
 
     }
 
@@ -107,8 +82,10 @@ public class MqttService implements Parcelable{
 
     public MqttConnectOptions getMqttOptions(){
         MqttConnectOptions options = new MqttConnectOptions();
+       // options.setPassword("Password1".toCharArray());
+        //options.setUserName("samKa");
         options.setPassword("password".toCharArray());
-        options.setUserName("maji22");
+        options.setUserName("Android_2");
         options.setCleanSession(true);
         options.setKeepAliveInterval(60000000);
         return options;
@@ -120,14 +97,24 @@ public class MqttService implements Parcelable{
             @Override
             public void onSuccess(IMqttToken asyncActionToken) {
                 Log.i(TAG, "onSuccess");
+                if(listener != null){
+                    try {
+                        listener.onConnect();
+                    } catch (MqttException e) {
+                        throw new RuntimeException(e);
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
                 client.setCallback(new MqttCallbackExtended() {
                     @Override
                     public void connectComplete(boolean reconnect, String serverURI) {
-
+                        Log.i(TAG, "connect complete");
                     }
 
                     @Override
                     public void connectionLost(Throwable cause) {
+                        Log.i(TAG, "connection lost, reconnecting...");
                         try {
                             connectMqtt();
                         } catch (MqttException e) {
@@ -137,19 +124,14 @@ public class MqttService implements Parcelable{
 
                     @Override
                     public void messageArrived(String topic, MqttMessage message) throws Exception {
-                        JSONObject object = new JSONObject(new String(message.getPayload()));
-                       String key= "";
-                        if(object.toString().contains("Temperature")){
-                            key = "Temperature";
-                        } if(object.toString().contains("Relay")){
-                            key = "Relay";
-                        }
-                        String msg = object.getString(key);
+                        String key1 = TEMP_SET_STATUS;
+                        String key2 = RELAY_STATUS;
+                        String key3 = TEMP_VALUE;
 
                         if(listener != null) {
-                            listener.messageReceived(topic,key, msg);
-                     //   } else {
-                          //  Log.i(TAG, "listener is null");
+                            listener.messageReceived(topic, message);
+                        } else {
+                            Log.i(TAG, "listener is null");
                         }
 
                     }
@@ -163,74 +145,40 @@ public class MqttService implements Parcelable{
 
             @Override
             public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                Log.i(TAG, "did not connect :(");
+                Log.i(TAG, "did not connect :( " + exception.getMessage());
             }
         });
     }
 
-   /* public void publish(String topic, String key, String value) throws JSONException, MqttException {
-        JSONObject object = new JSONObject();
-        object.put(key, value);
-        MqttMessage message = new MqttMessage(object.toString().getBytes(StandardCharsets.UTF_8));
+    public void publishMessage(String topic, String deviceId, String key, double value) throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put(key, value);
+        topic = topic +"/"+deviceId + "/json";
+        MqttMessage message = new MqttMessage(jsonObject.toString().getBytes(StandardCharsets.UTF_8));
         client.publish(topic, message);
-        Log.i(TAG, "published " + message + "to " + topic);
-    }*/
-
-    /**
-     * publishing request with device MAC appended to topic name
-     * @param deviceMac
-     * @throws JSONException
-     * @throws MqttException
-     */
-    public void publishTempRequest(String deviceMac) throws JSONException, MqttException {
-        JSONObject object = new JSONObject();
-        object.put("request", "1");
-        MqttMessage message = new MqttMessage(object.toString().getBytes(StandardCharsets.UTF_8));
-        client.publish(TEMP_PUB, message);
-               // +"/"+deviceMac, message);
-        Log.i(TAG, "published " + message + "to " + TEMP_PUB+"/"+deviceMac);
+        Log.i(TAG, "published " + message + " to " + topic);
     }
 
-    public void publishRelayStatusRequest() throws JSONException, MqttException {
-        JSONObject object = new JSONObject();
-        object.put("request", "1");
-        MqttMessage message = new MqttMessage(object.toString().getBytes(StandardCharsets.UTF_8));
-        client.publish(RELAY_STATUS_SUB, message);
-        Log.i(TAG, "published " + message + "to " + RELAY_STATUS_SUB);
+    public void publishToTemp(String topic, String deviceId, String keyRequestAll, String keySetTemp, String keyReset, int valRequestAll, int valSetTemp, int valReset) throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put(keyRequestAll, valRequestAll);
+        jsonObject.put(keySetTemp, valSetTemp);
+        jsonObject.put(keyReset, valReset);
+        topic = topic +"/"+ deviceId + "/json";
+        MqttMessage message = new MqttMessage(jsonObject.toString().getBytes(StandardCharsets.UTF_8));
+        client.publish(topic, message);
+        Log.i(TAG, "published " + message + " to " + topic);
+
     }
 
-    public void publishArmDevice() throws JSONException, MqttException {
-        JSONObject object = new JSONObject();
-        object.put("arm_value", "1");
-        MqttMessage message = new MqttMessage(object.toString().getBytes(StandardCharsets.UTF_8));
-        client.publish(PUB_ARM_DISARM_REQUEST, message);
-        Log.i(TAG, "published " + message + "to " + PUB_ARM_DISARM_REQUEST);
-    }
-    public void publishDisarmDevice() throws JSONException, MqttException {
-        JSONObject object = new JSONObject();
-        object.put("arm_value", "0");
-        MqttMessage message = new MqttMessage(object.toString().getBytes(StandardCharsets.UTF_8));
-        client.publish(PUB_ARM_DISARM_REQUEST, message);
-        Log.i(TAG, "published " + message + "to " + PUB_ARM_DISARM_REQUEST);
-    }
-    public void publishResetDevice() throws JSONException, MqttException {
-        JSONObject object = new JSONObject();
-        object.put("reset", "0");
-        MqttMessage message = new MqttMessage(object.toString().getBytes(StandardCharsets.UTF_8));
-        client.publish(RESET_REQUEST, message);
-        Log.i(TAG, "published " + message + "to " + RESET_REQUEST);
+
+    public void subscribe(String topic, String deviceId){
+        topic = topic + "/" + deviceId + "/json" ; //ADD THE "N" BACK TO "JSON"
+        client.subscribe(topic, 0);
+        Log.i(TAG, "subscribed to " + topic);
     }
 
-    public void subscribeToTemp()throws MqttException {
-        client.subscribe(TEMP_SUB, 0);
-        Log.i(TAG, "subscribed to: " + TEMP_SUB);
-    }
-    public void subscribeToRelay()throws MqttException {
-        client.subscribe(RELAY_STATUS_SUB, 0);
-        Log.i(TAG, "subscribed to: " + RELAY_STATUS_SUB);
-    }
-
-    public void unsubscribe(String topic){
+    public void unsubscribe(String topic, String deviceId){
         client.unsubscribe(topic);
         Log.i(TAG, "unsubscribed from: " + topic);
     }

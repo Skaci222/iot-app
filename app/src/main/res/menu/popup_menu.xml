@@ -3,18 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.myproject.espressif.MainActivity">
     <item
-        android:id="@+id/actionAddDevice"
-        android:title="Add device"
+        android:id="@+id/actionRenameDevice"
+        android:title="Rename Device"
         app:showAsAction="never"/>
 
-    <item
-        android:id="@+id/disconnect"
-        android:title="Disconnect from Server"
-        app:showAsAction="never"/>
 
     <item
-        android:id="@+id/unProv"
-        android:title="Remove Provisioning"
+        android:id="@+id/actionUnProv"
+        android:title="Delete Device"
         app:showAsAction="never"/>
 
 </menu>

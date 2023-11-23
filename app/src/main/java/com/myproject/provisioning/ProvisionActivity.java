@@ -14,15 +14,12 @@
 
 package com.myproject.provisioning;
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RadioButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -37,7 +34,7 @@ import com.myproject.R;
 import com.myproject.provisioning.listeners.ProvisionListener;
 import com.myproject.room.Device;
 import com.myproject.room.DeviceViewModel;
-import com.myproject.ui.activities.StartScreen;
+import com.myproject.ui.activities.HomeActivity;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -46,7 +43,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.Random;
 
 public class ProvisionActivity extends AppCompatActivity { // this is the activity where JSON data is sent to ESP via sentToEndPoint method
 
@@ -68,7 +65,11 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
     private String name;
     private String deviceType;
     private android.app.AlertDialog dialog;
-    private String mac;
+    private String deviceId;
+
+    private String appId;
+
+    private Random random;
     private DeviceViewModel deviceViewModel;
     private Bundle bundle;
 
@@ -87,13 +88,6 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
 
         Log.d(TAG, "Selected AP -" + ssidValue);
 
-        bundle = getIntent().getExtras();
-        name = bundle.getString("name");
-        deviceType = bundle.getString("type");
-        mac = bundle.getString("ssid");
-
-        deviceViewModel = new ViewModelProvider(this).get(DeviceViewModel.class);
-
         //calling dataExchange in onCreate, check if it works
         dataExchange();
         try {
@@ -104,6 +98,11 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
 
         showLoading();
         doProvisioning();
+
+        deviceViewModel = new ViewModelProvider(this).get(DeviceViewModel.class);
+
+        random = new Random();
+        appId = String.valueOf(random.nextInt(100));
     }
 
     @Override
@@ -137,9 +136,9 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
 
         @Override
         public void onClick(View v) {
-            Device device = new Device(name, deviceType, mac);
+            Device device = new Device(deviceType, deviceId);
             deviceViewModel.insert(device);
-            Intent i = new Intent(getApplicationContext(), StartScreen.class);
+            Intent i = new Intent(getApplicationContext(), HomeActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(i);
             finish();
@@ -183,8 +182,8 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
 
         JSONObject obj = new JSONObject();
         try {
-            obj.put("hostname", "e7ea538cb0564a42b068269a96574848.s1.eu.hivemq.cloud");
-            obj.put("username", "pladi");
+            obj.put("hostname", "l1716957.ala.us-east-1.emqxsl.com");
+            obj.put("username", "RELAY_E089FC");
             obj.put("password", "password");
         } catch (JSONException e) {
             e.printStackTrace();
@@ -194,19 +193,24 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
             @Override
             public void onSuccess(byte[] returnData) {
                 /**
-                 * obtain Mac from this callback and save it in a variable, send to StartScreen
+                 * obtain device id  from this callback and save it in a variable, send to HomeActivity
                  */
-                mac = new String(returnData, StandardCharsets.UTF_8);
-                //bundle.putString("mac", mac);
-                Intent intent = new Intent(getApplicationContext(), StartScreen.class);
+                String data = new String(returnData, StandardCharsets.UTF_8);
+                if(data.contains("RELAY")){
+                    deviceType = "relay_device";
+                }
+                deviceId = data.substring(data.length()-6); //unsure if this is the correct substring
+                bundle.putString("deviceId", deviceId);
+                bundle.putString("deviceType", deviceType);
+                Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                 intent.putExtras(bundle);
-                Log.d(TAG, "return data: " + mac);
+                Log.d(TAG, "return data: " + returnData);
                 Log.i(TAG, "send data to custom endpoint is successful");
             }
 
             @Override
             public void onFailure(Exception e) {
-                Log.d("SendCustomMsg", "Failed to Send");
+                Log.d(TAG, "Failed to Send");
             }
         });
 

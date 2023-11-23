@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/tvTempVal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="70dp"
+        android:fontFamily="sans-serif"
+        android:text="----"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display4" />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/isBlowerOn"
+        android:text="Blower is off"
+        android:layout_below="@+id/tvTempVal"
+        android:layout_centerHorizontal="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvSetTempTitle"
+        android:text="Set Temp is:"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:fontFamily="sans-serif-black"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="30dp"
+        android:layout_marginTop="30dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvSetTempVal"
+        android:layout_below="@+id/tvSetTempTitle"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="65dp"
+        android:layout_marginTop="@dimen/margin_10"
+        android:fontFamily="sans-serif"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:text="---"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/buttonTempUp"
+        android:src="@drawable/increase_drawable"
+        android:background="@color/white"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="@dimen/margin_10"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/buttonTempDown"
+        android:layout_below="@id/buttonTempUp"
+        android:layout_marginLeft="@dimen/margin_10"
+        android:src="@drawable/decrease_drawable"
+        android:background="@color/white"/>
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/etDeviceName"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="15dp"
+        android:background="@null"
+        android:text="Device Name"
+        android:textColor="@color/color_dark_gray"
+        android:textStyle="bold"
+        android:clickable="true"
+        android:inputType="text"
+        android:imeOptions="actionDone"/>
+
+</RelativeLayout>

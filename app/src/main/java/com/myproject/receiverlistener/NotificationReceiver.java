@@ -17,12 +17,12 @@ public class NotificationReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         NotificationHelper notificationHelper = new NotificationHelper(context);
-        NotificationCompat.Builder nb = notificationHelper.sendTempNotification("Furnace temperature low",
-                "Furnace temperature has fallen below 30" + "℃");
+        NotificationCompat.Builder nb = notificationHelper.addWoodNotification("Time To Add Wood",
+                "add wood to continue being toasty");
 
         notificationHelper.getManager().notify(6, nb.build());
 
-        Intent broadcastIntent = new Intent("temp_low_notification");
+        Intent broadcastIntent = new Intent("add_wood_notification");
         context.sendBroadcast(broadcastIntent);
     }
 }

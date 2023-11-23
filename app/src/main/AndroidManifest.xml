@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -20,17 +24,19 @@
     <application
         android:name=".logic.App"
         android:allowBackup="true"
-        android:icon="@drawable/icons8_internet_of_things_64"
-        android:label="Homi"
+        android:icon="@drawable/baseline_fireplace_24"
+        android:label="Furnace Controller"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".ui.activities.HistoricalTempData"
-            android:exported="false"
-            android:screenOrientation="portrait" />
+            android:name=".ui.activities.GraphTest"
+            android:exported="false" />
         <activity
-            android:name=".ui.activities.StartScreen"
+            android:name=".ui.activities.GraphActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.HomeActivity"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -40,47 +46,40 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.myproject.provisioning.DeviceSettingsActivity"
+            android:name=".provisioning.DeviceSettingsActivity"
             android:exported="false" />
         <activity
-            android:name="com.myproject.provisioning.EspMainActivity"
+            android:name=".provisioning.EspMainActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_provision_landing"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.myproject.provisioning.WiFiConfigActivity"
+            android:name=".provisioning.WiFiConfigActivity"
             android:label="@string/title_activity_wifi_config"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.myproject.provisioning.ProvisionLanding"
+            android:name=".provisioning.ProvisionLanding"
             android:label="@string/title_activity_provision_landing"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.myproject.provisioning.ProvisionActivity"
+            android:name=".provisioning.ProvisionActivity"
             android:label="@string/title_activity_provisioning"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.myproject.provisioning.SettingsActivity"
+            android:name=".provisioning.SettingsActivity"
             android:label="@string/title_activity_settings"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.myproject.provisioning.WiFiScanActivity"
+            android:name=".provisioning.WiFiScanActivity"
             android:label="@string/title_activity_wifi_scan_list"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".ui.activities.MainTest"
-            android:screenOrientation="portrait"
-            android:exported="true"/>
-        <service android:name=".logic.MyService" />
-        <service android:name="org.eclipse.paho.android.service.MqttService" />
 
         <receiver android:name=".receiverlistener.NotificationReceiver" />
-        <receiver android:name=".receiverlistener.ArmReceiver" />
-        <receiver android:name=".receiverlistener.DisarmReceiver" />
     </application>
 
 </manifest>
